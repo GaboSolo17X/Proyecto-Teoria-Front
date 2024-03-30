@@ -1,17 +1,14 @@
 <template>
     <v-card>
         <v-layout>
-            <!-- <v-system-bar color="deep-purple darken-3"></v-system-bar> -->
-            <v-app-bar class="nav">
-                <img cover src="../assets/icon.png" class="icon">
-                <!-- <v-toolbar-title class="title">Simulador Epidemiológico</v-toolbar-title> -->
-                <div class="title">Simulador Epidemiológico</div>
-
-            </v-app-bar>
-
+            <router-link to="/"> 
+                <v-app-bar class="nav">
+                  <img cover src="../assets/icon.png" class="icon">
+                  <div class="title">Simulador Epidemiológico</div>
+                </v-app-bar>
+        </router-link>
         </v-layout>
     </v-card>
-
 </template>
 
 <script>
@@ -29,6 +26,7 @@ export default {
     font-family: "Days One", sans-serif;
     display: flex;
     justify-content: center;
+    position: fixed;
 }
 
 .title {
