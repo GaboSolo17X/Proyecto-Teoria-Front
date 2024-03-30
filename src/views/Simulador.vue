@@ -5,7 +5,7 @@
             <div class="data">
                 <v-card variant="outlined" class="mess">
                     <v-card-text>
-                        Informacion sobre el ganado y el tiempo
+                        Informacion sobre el ganado y el tiempo <v-icon icon="fa:fas fa-solid fa-skull"></v-icon>
                     </v-card-text>
                 </v-card>
                 <v-card variant="outlined" class="formu">
@@ -35,21 +35,29 @@
                         <v-col>
                             <div class="final">
                                 <img cover src="../assets/cow.png" class="icon">
-                                <v-row>
-                                    <v-icon icon="fa-solid fa-skull"></v-icon>
-                                    <svg xmlns="http://www.w3.org/2000/svg" ></svg>
+                                <v-row class="cow">
                                 <font-awesome-icon icon="fa-solid fa-skull" />
                                 <p>Hola</p>
                                 </v-row>
-                                
-                               
                             </div>
                         </v-col>
                         <v-col>
-                            DOS
+                            <div class="final2">
+                                <img cover src="../assets/cow.png" class="icon">
+                                <v-row class="cow">
+                                <font-awesome-icon icon="fa-solid fa-virus" />
+                                <p>Hola</p>
+                                </v-row>
+                            </div>
                         </v-col>
                         <v-col>
-                            TRES
+                            <div class="final3">
+                                <img cover src="../assets/cow.png" class="icon">
+                                <v-row class="cow">
+                                <font-awesome-icon icon="fa-solid fa-heart-pulse" />
+                                <p>Hola</p>
+                                </v-row>
+                            </div>
                         </v-col>
                     </v-row>
                    </v-card> 
@@ -68,6 +76,7 @@
 <script>
 import Nav from '../components/navbar.vue'
 import { ref } from 'vue'
+
 export default {
     components: {
         Nav
@@ -200,6 +209,26 @@ export default {
   }
   
   .final{
-
+    color: #CF4647;
   }
+  .cow{
+    display: flex;
+    justify-content: center;
+    font-size: 1.3rem;
+  }
+
+  .final2{
+    color: #FDF4B0;
+  }
+
+  .final3{
+    color: #2E97B7;
+  }
+
+  .final .icon, .final2 .icon, .final3 .icon{
+    margin-left: 0px;
+    width: 170px;
+  }
+
+
 </style>
