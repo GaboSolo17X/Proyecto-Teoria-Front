@@ -7,18 +7,18 @@
           <v-card-text> Informacion sobre el ganado y el tiempo </v-card-text>
         </v-card>
         <v-card variant="outlined" class="formu">
-          <v-form @submit.prevent>
+          <v-form @submit.prevent="onSubmit">
             <v-text-field
               height="150"
               variant="solo"
               rounded="xl"
-              v-model="firstName"
-              :rules="firstNameRules"
+              v-model="form.meses"
               label="Cantidad de meses:"
             ></v-text-field>
 
             <v-select
               rounded="xl"
+              v-model="form.condicion"
               label="Condicion del ganado:"
               :items="['Optimo', 'Deplorable']"
               variant="solo"
@@ -27,8 +27,7 @@
             <v-text-field
               variant="solo"
               rounded="xl"
-              v-model="vacasIni"
-              :rules="rules"
+              v-model="form.vacasIni"
               label="Números de vacas inicial:"
             ></v-text-field>
 
@@ -36,16 +35,14 @@
               height="37px"
               variant="solo"
               rounded="xl"
-              v-model="vacasInf"
-              :rules="rules"
+              v-model="form.vacasInf"
               label="Números de vacas infectadas:"
             ></v-text-field>
 
             <v-text-field
               variant="solo"
               rounded="xl"
-              v-model="vacasMue"
-              :rules="rules"
+              v-model="form.vacasMue"
               label="Números de vacas muertas:"
             ></v-text-field>
 
@@ -122,122 +119,50 @@
               </v-col>
             </v-row>
             <div class="rowCal mt-5" v-show="isCalcVisible">
-              <div class="calculos mt-5">
-                <p>Mes 1</p>
+              <div
+                class="calculos mt-5"
+                v-for="item in calculos"
+                :key="item.mes"
+              >
+                <p>{{ item.mes }}</p>
                 <v-card>
                   <v-row>
                     <v-col>
-                      <span> Tasa de incidencia:10% </span>
+                      <span>Tasa de incidencia: {{ item.ti }}% </span>
                     </v-col>
                     <v-col>
-                      <span> Tasa de mortalidad:10% </span>
+                      <span>Tasa de mortalidad: {{ item.tm }}% </span>
                     </v-col>
                     <v-col>
-                      <span> Tasa de letalidad:90% </span>
+                      <span> Tasa de letalidad: {{ item.tl }}% </span>
                     </v-col>
                   </v-row>
                   <v-row>
                     <v-col class="d-flex flex-column">
-                      <span> Numero de vacas:900 </span>
-                      <span> Numero de vacas infectadas:900 </span>
-                      <span> Numero de vacas muertas:900 </span>
+                      <span> Numero de vacas:{{ item.vivas }} </span>
+                      <span>
+                        Numero de vacas infectadas: {{ item.infectadas }}
+                      </span>
+                      <span>Numero de vacas muertas: {{ item.muertas }} </span>
                     </v-col>
                     <v-col class="d-flex flex-column">
-                      <span> Numero de vacas infectadas en el mes:470% </span>
-                      <span> vacas muertas de las infectads:18 </span>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </div>
-              <div class="calculos mt-10">
-                <p>Mes 1</p>
-                <v-card>
-                  <v-row>
-                    <v-col>
-                      <span> Tasa de incidencia:10% </span>
-                    </v-col>
-                    <v-col>
-                      <span> Tasa de mortalidad:10% </span>
-                    </v-col>
-                    <v-col>
-                      <span> Tasa de letalidad:90% </span>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col class="d-flex flex-column">
-                      <span> Numero de vacas:900 </span>
-                      <span> Numero de vacas infectadas:900 </span>
-                      <span> Numero de vacas muertas:900 </span>
-                    </v-col>
-                    <v-col class="d-flex flex-column">
-                      <span> Numero de vacas infectadas en el mes:470% </span>
-                      <span> vacas muertas de las infectads:18 </span>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </div>
-              <div class="calculos mt-10">
-                <p>Mes 1</p>
-                <v-card>
-                  <v-row>
-                    <v-col>
-                      <span> Tasa de incidencia:10% </span>
-                    </v-col>
-                    <v-col>
-                      <span> Tasa de mortalidad:10% </span>
-                    </v-col>
-                    <v-col>
-                      <span> Tasa de letalidad:90% </span>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col class="d-flex flex-column">
-                      <span> Numero de vacas:900 </span>
-                      <span> Numero de vacas infectadas:900 </span>
-                      <span> Numero de vacas muertas:900 </span>
-                    </v-col>
-                    <v-col class="d-flex flex-column">
-                      <span> Numero de vacas infectadas en el mes:470% </span>
-                      <span> vacas muertas de las infectads:18 </span>
-                    </v-col>
-                  </v-row>
-                </v-card>
-              </div>
-              <div class="calculos mt-10">
-                <p>Mes 1</p>
-                <v-card>
-                  <v-row>
-                    <v-col>
-                      <span> Tasa de incidencia:10% </span>
-                    </v-col>
-                    <v-col>
-                      <span> Tasa de mortalidad:10% </span>
-                    </v-col>
-                    <v-col>
-                      <span> Tasa de letalidad:90% </span>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col class="d-flex flex-column">
-                      <span> Numero de vacas:900 </span>
-                      <span> Numero de vacas infectadas:900 </span>
-                      <span> Numero de vacas muertas:900 </span>
-                    </v-col>
-                    <v-col class="d-flex flex-column">
-                      <span> Numero de vacas infectadas en el mes:470% </span>
-                      <span> vacas muertas de las infectads:18 </span>
+                      <span>
+                        Numero de vacas infectadas en el mes: {{ item.inMes }}
+                      </span>
+                      <span>
+                        vacas muertas de las infectads:{{ item.mueIn }}
+                      </span>
                     </v-col>
                   </v-row>
                 </v-card>
               </div>
             </div>
-
-            <div class="rowGra mt-5" v-show="isGraphVisible">
-             grafica
+            <div class="rowGra mt-5 pa-6" v-show="isGraphVisible">
+              <canvas id="myChart"></canvas>
             </div>
 
             <div class="rowTab mt-5" v-show="isTableVisible">
-                <v-table height="900px">
+              <v-table height="900px">
                 <thead>
                   <tr>
                     <th class="text-left">Mes</th>
@@ -265,40 +190,146 @@
 
 <script>
 import Nav from "../components/navbar.vue";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import Chart from "chart.js/auto";
 
 export default {
   components: {
     Nav,
   },
   setup() {
-    const totalVacas = ref();
-    const totalMuertas = ref();
-    const totalInfectadas = ref();
-    const vacasIni = ref();
-    const infecIni = ref();
-    const muerIni = ref();
     const countInf = ref();
     const countMue = ref();
     const countVac = ref();
     const countTaMo = ref();
+    const taMoIni = ref();
+    const taLeIni = ref();
     const countTaLe = ref();
+    const taIncIni = ref();
     const countTaInc = ref();
     const meses = ref();
 
-    const tasaLetal = (muerIni, infecIni) => {
-      return (countTaLe = muerIni / infecIni);
+    const form = ref({
+      meses: "",
+      condicion: null,
+      vacasIni: "",
+      vacasInf: "",
+      vacasMue: "",
+    });
+
+    console.log("Hola");
+
+    const modelo = (vacasIni, infecIni, muerIni, meses) => {
+      if (!isNaN(meses) && meses > 0) {
+     
+          taLeIni.value = muerIni / infecIni;
+          taMoIni.value = muerIni / vacasIni;
+          taIncIni.value = (infecIni / vacasIni)*1000;
+          console.log("Tasa de letalidad inicial:", taLeIni.value);
+    console.log("Tasa de mortalidad inicial:", taMoIni.value);
+    console.log("Tasa de incidencia inicial:", taIncIni.value);
+
+    // Calcular el número de vacas restantes para el primer mes
+    let vacasRestantes = vacasIni - muerIni;
+    console.log("Número de vacas restantes:", vacasRestantes);
+
+    // Calcular el número de vacas infectadas para el primer mes
+    let infectadasMes = (taIncIni.value / 1000) * vacasRestantes;
+    console.log("Número de vacas infectadas para el primer mes:", infectadasMes);
+
+    // Calcular el número de vacas muertas para el primer mes
+    let muertasMes = infectadasMes * taLeIni.value;
+    console.log("Número de vacas muertas para el primer mes:", muertasMes);
+
+    // Calcular las tasas de letalidad, mortalidad e incidencia para los meses siguientes
+    for (let i = 1; i < meses; i++) {
+      taLeIni.value = muertasMes / infectadasMes;
+      taMoIni.value = muertasMes / vacasRestantes;
+      taIncIni.value = (infectadasMes / vacasRestantes)*1000;
+
+      console.log("Tasa de letalidad para el mes", i + 1, ":", taLeIni.value);
+      console.log("Tasa de mortalidad para el mes", i + 1, ":", taMoIni.value);
+      console.log("Tasa de incidencia para el mes", i + 1, ":", taIncIni.value);
+
+      // Calcular el número de vacas restantes para el mes siguiente
+      vacasRestantes -= muertasMes;
+      console.log("Número de vacas restantes para el mes", i + 1, ":", vacasRestantes);
+
+      // Calcular el número de vacas infectadas para el mes siguiente
+      infectadasMes = (taIncIni.value / 1000) * vacasRestantes;
+      console.log("Número de vacas infectadas para el mes", i + 1, ":", infectadasMes);
+
+      // Calcular el número de vacas muertas para el mes siguiente
+      muertasMes = infectadasMes * taLeIni.value;
+      console.log("Número de vacas muertas para el mes", i + 1, ":", muertasMes);
+    }
+      } else {
+        console.error("El número de vacas inicial ingresado no es válido.");
+      }
     };
 
-    const tasaIncidencia = (infecIni, vacasIni) => {
-      return (countTaInc = infecIni / vacasIni);
+    const onSubmit = async () => {
+      modelo(
+        form.value.vacasIni,
+        form.value.vacasInf,
+        form.value.vacasMue,
+        form.value.meses
+      );
     };
-
-    const modelo = (vacasIni, infecIni, muerIni) => {};
 
     const isGraphVisible = ref(false);
     const isCalcVisible = ref(true);
     const isTableVisible = ref(false);
+
+    //CARGAMOS EL GRAFICO
+    const cargarGraf = () => {
+      const ctx = document.getElementById("myChart");
+
+      if (ctx) {
+        const labels = ["Mes 1", "Mes 2", "Mes 3", "Mes 4", "Mes 5"];
+        const lives = [800, 700, 530, 590, 290];
+        const deaths = [700, 300, 530, 590, 990];
+
+        const data2 = {
+          labels: labels,
+          datasets: [
+            {
+              label: "Vivas",
+              data: lives,
+              borderColor: "red",
+              backgroundColor: "rgba(255, 0, 0, 0.5)",
+            },
+            {
+              label: "Muertas",
+              data: deaths,
+              borderColor: "blue",
+              backgroundColor: "rgba(0, 0, 255, 0.5)",
+            },
+          ],
+        };
+
+        new Chart(ctx, {
+          type: "line",
+          data: data2,
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Vacas vivas vs Vacas muertas",
+              },
+            },
+          },
+        });
+      }
+    };
+
+    onMounted(() => {
+      cargarGraf();
+    });
     const showCardGraph = () => {
       isGraphVisible.value = true;
       isTableVisible.value = false;
@@ -315,42 +346,82 @@ export default {
       isCalcVisible.value = false;
     };
 
-    const data= [
-          {
-            meses: 'Mes 1',
-            vivas: 500,
-            infec: 20,
-            muert:60,
-          },
-          {
-            meses: 'Mes 2',
-            vivas: 400,
-            infec: 20,
-            muert:60,
-          },
-          {
-            meses: 'Mes 3',
-            vivas: 367,
-            infec: 20,
-            muert:60,
-          },
-          {
-            meses: 'Mes 4',
-            vivas: 500,
-            infec: 20,
-            muert:60,
-          },
-        ]
+    //CARGAMOS LA TABLA
+    const data = [
+      {
+        meses: "Mes 1",
+        vivas: 500,
+        infec: 20,
+        muert: 60,
+      },
+      {
+        meses: "Mes 2",
+        vivas: 400,
+        infec: 20,
+        muert: 60,
+      },
+      {
+        meses: "Mes 3",
+        vivas: 367,
+        infec: 20,
+        muert: 60,
+      },
+      {
+        meses: "Mes 4",
+        vivas: 500,
+        infec: 20,
+        muert: 60,
+      },
+    ];
+
+    const calculos = [
+      {
+        mes: "Mes 1",
+        ti: 97,
+        tm: 92,
+        tl: 23,
+        vivas: 23,
+        infectadas: 43,
+        muertas: 54,
+        inMes: 34,
+        mueIn: 34,
+      },
+      {
+        mes: "Mes 2",
+        ti: 97,
+        tm: 92,
+        tl: 23,
+        vivas: 23,
+        infectadas: 43,
+        muertas: 54,
+        inMes: 34,
+        mueIn: 34,
+      },
+      {
+        mes: "Mes 3",
+        ti: 97,
+        tm: 92,
+        tl: 23,
+        vivas: 23,
+        infectadas: 43,
+        muertas: 54,
+        inMes: 34,
+        mueIn: 34,
+      },
+    ];
 
     return {
-      tasaLetal,
+      form,
       showCardTable,
       showCardGraph,
       showCardCalc,
+      cargarGraf,
       isGraphVisible,
       isCalcVisible,
       isTableVisible,
-      data
+      data,
+      calculos,
+      onSubmit,
     };
   },
 };
