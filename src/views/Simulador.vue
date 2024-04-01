@@ -121,20 +121,20 @@
             <div class="rowCal mt-5" v-show="isCalcVisible">
               <div
                 class="calculos mt-5"
-                v-for="item in calculos"
+                v-for="item in resultados"
                 :key="item.mes"
               >
                 <p>{{ item.mes }}</p>
                 <v-card>
                   <v-row>
                     <v-col>
-                      <span>Tasa de incidencia: {{ item.ti }}% </span>
+                      <span>Tasa de incidencia: {{ item.ti/1000 }} </span>
                     </v-col>
                     <v-col>
-                      <span>Tasa de mortalidad: {{ item.tm }}% </span>
+                      <span>Tasa de mortalidad: {{ item.tm *100}}% </span>
                     </v-col>
                     <v-col>
-                      <span> Tasa de letalidad: {{ item.tl }}% </span>
+                      <span> Tasa de letalidad: {{ item.tl *100 }}% </span>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -150,7 +150,7 @@
                         Numero de vacas infectadas en el mes: {{ item.inMes }}
                       </span>
                       <span>
-                        vacas muertas de las infectads:{{ item.mueIn }}
+                        Vacas muertas de las infectadas:{{ item.mueIn }}
                       </span>
                     </v-col>
                   </v-row>
@@ -172,11 +172,11 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in data" :key="item.meses">
-                    <td>{{ item.meses }}</td>
+                  <tr v-for="item in resultados" :key="item.mes">
+                    <td>{{ item.mes }}</td>
                     <td>{{ item.vivas }}</td>
-                    <td>{{ item.infec }}</td>
-                    <td>{{ item.muert }}</td>
+                    <td>{{ item.infectadas }}</td>
+                    <td>{{ item.muertas  }}</td>
                   </tr>
                 </tbody>
               </v-table>
@@ -198,16 +198,15 @@ export default {
     Nav,
   },
   setup() {
-    const countInf = ref();
-    const countMue = ref();
-    const countVac = ref();
-    const countTaMo = ref();
+  
     const taMoIni = ref();
     const taLeIni = ref();
-    const countTaLe = ref();
     const taIncIni = ref();
-    const countTaInc = ref();
-    const meses = ref();
+    const resultados= ref([])
+    const labels= ref([])
+    const vivas= ref([])
+    const muertas= ref([])
+  
 
     const form = ref({
       meses: "",
@@ -220,53 +219,113 @@ export default {
     console.log("Hola");
 
     const modelo = (vacasIni, infecIni, muerIni, meses) => {
+      resultados.value=[];
       if (!isNaN(meses) && meses > 0) {
+
+           let muertesTotales = muerIni; // Inicializar el total de muertes con las muertes iniciales
+           let infectadasTotales = infecIni; // Inicializar el total de infectadas con las infectadas iniciales
+
      
-          taLeIni.value = muerIni / infecIni;
-          taMoIni.value = muerIni / vacasIni;
-          taIncIni.value = (infecIni / vacasIni)*1000;
+          taLeIni.value = (muerIni / infecIni).toFixed(2);
+          taMoIni.value = (muerIni / vacasIni).toFixed(2);
+          taIncIni.value = Math.round((infecIni / vacasIni)*1000);
           console.log("Tasa de letalidad inicial:", taLeIni.value);
-    console.log("Tasa de mortalidad inicial:", taMoIni.value);
-    console.log("Tasa de incidencia inicial:", taIncIni.value);
+          console.log("Tasa de mortalidad inicial:", taMoIni.value);
+          console.log("Tasa de incidencia inicial:", taIncIni.value);
+      
+          // Calcular el número de vacas restantes para el siguiente mes
+          let vacasRestantes = Math.round(vacasIni - muerIni);
+          console.log("Número de vacas restantes:", vacasRestantes);
+      
+          // Calcular el número de vacas infectadas para el primer mes
+          let infectadasMes = Math.round((taIncIni.value / 1000) * vacasRestantes);
+          console.log("Número de vacas infectadas para el primer mes:", infectadasMes);
+      
+          // Calcular el número de vacas muertas para el primer mes
+          let muertasMes = Math.round(infectadasMes * taLeIni.value);
+          console.log("Número de vacas muertas para el primer mes:", muertasMes);
 
-    // Calcular el número de vacas restantes para el primer mes
-    let vacasRestantes = vacasIni - muerIni;
-    console.log("Número de vacas restantes:", vacasRestantes);
+          muertesTotales = parseInt(muertesTotales)+muertasMes;
+          infectadasTotales = parseInt(infectadasTotales)+ infectadasMes;
 
-    // Calcular el número de vacas infectadas para el primer mes
-    let infectadasMes = (taIncIni.value / 1000) * vacasRestantes;
-    console.log("Número de vacas infectadas para el primer mes:", infectadasMes);
+          console.log("Muertas totales al final del mes:",  muertesTotales);
+          console.log("Infectadas totales al final del mes:", infectadasTotales);
 
-    // Calcular el número de vacas muertas para el primer mes
-    let muertasMes = infectadasMes * taLeIni.value;
-    console.log("Número de vacas muertas para el primer mes:", muertasMes);
+          let datosMes1 = {
+              mes: `Mes 1`,
+              ti: taIncIni.value,
+              tm: taMoIni.value,
+              tl: taLeIni.value,
+              vivas: parseInt(vacasIni),
+              infectadas: parseInt(infecIni),
+              muertas: parseInt(muerIni),
+              inMes: infectadasMes,
+              mueIn: muertasMes
+            };
 
-    // Calcular las tasas de letalidad, mortalidad e incidencia para los meses siguientes
-    for (let i = 1; i < meses; i++) {
-      taLeIni.value = muertasMes / infectadasMes;
-      taMoIni.value = muertasMes / vacasRestantes;
-      taIncIni.value = (infectadasMes / vacasRestantes)*1000;
+            resultados.value.push(datosMes1);
 
-      console.log("Tasa de letalidad para el mes", i + 1, ":", taLeIni.value);
-      console.log("Tasa de mortalidad para el mes", i + 1, ":", taMoIni.value);
-      console.log("Tasa de incidencia para el mes", i + 1, ":", taIncIni.value);
+            labels.value.push('Mes 1');
+            vivas.value.push(vacasIni);
+            // muertas.value.push(muerIni);
+      
+          // Calcular las tasas de letalidad, mortalidad e incidencia para los meses siguientes
+          for (let i = 1; i < meses; i++) {
+            
+            // Calcular el número de vacas restantes para el mes siguiente
+            vacasRestantes -= muertasMes;
+            console.log("Número de vacas restantes para el siguiente mes", i + 1, ":", vacasRestantes);
+      
+            // Calcular el número de vacas infectadas para el mes siguiente
+            infectadasMes = Math.round((taIncIni.value / 1000) * vacasRestantes);
+            console.log("Número de vacas infectadas para el mes", i + 1, ":", infectadasMes);
+      
+            // Calcular el número de vacas muertas para el mes siguiente
+            muertasMes = Math.round(infectadasMes * taLeIni.value);
+            console.log("Número de vacas muertas para el mes", i + 1, ":", muertasMes);
 
-      // Calcular el número de vacas restantes para el mes siguiente
-      vacasRestantes -= muertasMes;
-      console.log("Número de vacas restantes para el mes", i + 1, ":", vacasRestantes);
+            muertesTotales = muertesTotales + muertasMes; // Actualizar el total de muertes
+            infectadasTotales = infectadasTotales + infectadasMes; // Actualizar el total de infectadas
 
-      // Calcular el número de vacas infectadas para el mes siguiente
-      infectadasMes = (taIncIni.value / 1000) * vacasRestantes;
-      console.log("Número de vacas infectadas para el mes", i + 1, ":", infectadasMes);
+            console.log("Muertas totales al final del mes:",  muertesTotales);
+            console.log("Infectadas totales al final del mes:", infectadasTotales);
 
-      // Calcular el número de vacas muertas para el mes siguiente
-      muertasMes = infectadasMes * taLeIni.value;
-      console.log("Número de vacas muertas para el mes", i + 1, ":", muertasMes);
-    }
-      } else {
-        console.error("El número de vacas inicial ingresado no es válido.");
-      }
+            taLeIni.value =(muertasMes / infectadasMes).toFixed(2);
+            taMoIni.value = (muertasMes / vacasRestantes).toFixed(2);
+            taIncIni.value = Math.round((infectadasMes / vacasRestantes)*1000);
+      
+            console.log("Tasa de letalidad para el mes", i + 1, ":", taLeIni.value);
+            console.log("Tasa de mortalidad para el mes", i + 1, ":", taMoIni.value);
+            console.log("Tasa de incidencia para el mes", i + 1, ":", taIncIni.value);
+
+        
+
+            let datosMes = {
+              mes: `Mes ${i+1}`,
+              ti: taIncIni.value,
+              tm: taMoIni.value,
+              tl: taLeIni.value,
+              vivas: vacasRestantes,
+              infectadas: infectadasTotales,
+              muertas: muertesTotales,
+              inMes: infectadasMes,
+              mueIn: muertasMes
+            };
+
+             // Agregar el objeto al array de resultados
+             resultados.value.push(datosMes);
+             labels.value.push(`Mes ${i+1}`);
+            //  vivas.value.push(vacasRestantes)
+            //  muertas.value.push(infectadasTotales)
+          }
+            } else {
+              console.error("El número de vacas inicial ingresado no es válido.");
+            }
+
+            console.log(resultados.value)
     };
+
+    //NOTA: Hay que hacer el caso de que si las vacas que quedan son 0 que pare el ciclo y revisar los calculos
 
     const onSubmit = async () => {
       modelo(
@@ -286,22 +345,20 @@ export default {
       const ctx = document.getElementById("myChart");
 
       if (ctx) {
-        const labels = ["Mes 1", "Mes 2", "Mes 3", "Mes 4", "Mes 5"];
-        const lives = [800, 700, 530, 590, 290];
-        const deaths = [700, 300, 530, 590, 990];
+
 
         const data2 = {
-          labels: labels,
+          labels: labels.value,
           datasets: [
             {
               label: "Vivas",
-              data: lives,
+              data: vivas.value,
               borderColor: "red",
               backgroundColor: "rgba(255, 0, 0, 0.5)",
             },
             {
               label: "Muertas",
-              data: deaths,
+              data: muertas.value,
               borderColor: "blue",
               backgroundColor: "rgba(0, 0, 255, 0.5)",
             },
@@ -422,6 +479,7 @@ export default {
       data,
       calculos,
       onSubmit,
+      resultados
     };
   },
 };
