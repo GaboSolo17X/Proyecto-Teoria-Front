@@ -59,7 +59,7 @@
                   <img cover src="../assets/cow.png" class="icon" />
                   <v-row class="cow">
                     <font-awesome-icon icon="fa-solid fa-skull" />
-                    <p>1000</p>
+                    <p>{{muertesTotales}}</p>
                   </v-row>
                 </div>
               </v-col>
@@ -68,7 +68,7 @@
                   <img cover src="../assets/cow.png" class="icon" />
                   <v-row class="cow">
                     <font-awesome-icon icon="fa-solid fa-virus" />
-                    <p>1000</p>
+                    <p>{{infectadasTotales}}</p>
                   </v-row>
                 </div>
               </v-col>
@@ -77,7 +77,7 @@
                   <img cover src="../assets/cow.png" class="icon" />
                   <v-row class="cow">
                     <font-awesome-icon icon="fa-solid fa-heart-pulse" />
-                    <p>1000</p>
+                    <p>{{vacasRestantes}}</p>
                   </v-row>
                 </div>
               </v-col>
@@ -147,7 +147,7 @@
                     </v-col>
                     <v-col class="d-flex flex-column">
                       <span>
-                        Numero de vacas infectadas en el mes: {{ item.inMes }}
+                        Vacas infectadas para el siguiente mes: {{ item.inMes }}
                       </span>
                       <span>
                         Vacas muertas de las infectadas:{{ item.mueIn }}
@@ -162,7 +162,7 @@
             </div>
 
             <div class="rowTab mt-5" v-show="isTableVisible">
-              <v-table height="900px">
+              <v-table height="600px" fixed-header>
                 <thead>
                   <tr>
                     <th class="text-left">Mes</th>
@@ -190,7 +190,7 @@
 
 <script>
 import Nav from "../components/navbar.vue";
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import Chart from "chart.js/auto";
 
 export default {
@@ -206,7 +206,10 @@ export default {
     const labels= ref([])
     const vivas= ref([])
     const muertas= ref([])
-  
+    const muertesTotales = ref()
+    const infectadasTotales = ref()
+    const vacasRestantes = ref()
+    const vacasResMes=ref()
 
     const form = ref({
       meses: "",
@@ -222,8 +225,11 @@ export default {
       resultados.value=[];
       if (!isNaN(meses) && meses > 0) {
 
-           let muertesTotales = muerIni; // Inicializar el total de muertes con las muertes iniciales
-           let infectadasTotales = infecIni; // Inicializar el total de infectadas con las infectadas iniciales
+         // Inicializar el total de muertes con las muertes iniciales
+          muertesTotales.value = muerIni; 
+
+          // Inicializar el total de infectadas con las infectadas iniciales
+          infectadasTotales.value = infecIni; 
 
      
           taLeIni.value = (muerIni / infecIni).toFixed(2);
@@ -234,23 +240,19 @@ export default {
           console.log("Tasa de incidencia inicial:", taIncIni.value);
       
           // Calcular el número de vacas restantes para el siguiente mes
-          let vacasRestantes = Math.round(vacasIni - muerIni);
-          console.log("Número de vacas restantes:", vacasRestantes);
+          vacasRestantes.value = Math.round(vacasIni - muerIni);
+          vacasResMes.value=vacasRestantes.value
+          console.log("Número de vacas restantes:", vacasRestantes.value);
       
-          // Calcular el número de vacas infectadas para el primer mes
-          let infectadasMes = Math.round((taIncIni.value / 1000) * vacasRestantes);
+          // Calcular el número de vacas infectadas para el siguiente mes
+          let infectadasMes = Math.round((taIncIni.value / 1000) * vacasRestantes.value);
           console.log("Número de vacas infectadas para el primer mes:", infectadasMes);
       
-          // Calcular el número de vacas muertas para el primer mes
+          // Calcular el número de vacas muertas para el siguiente mes
           let muertasMes = Math.round(infectadasMes * taLeIni.value);
           console.log("Número de vacas muertas para el primer mes:", muertasMes);
 
-          muertesTotales = parseInt(muertesTotales)+muertasMes;
-          infectadasTotales = parseInt(infectadasTotales)+ infectadasMes;
-
-          console.log("Muertas totales al final del mes:",  muertesTotales);
-          console.log("Infectadas totales al final del mes:", infectadasTotales);
-
+          //Guardamos los calculos del mes 1 con los cuales empezaremos los siguientes meses
           let datosMes1 = {
               mes: `Mes 1`,
               ti: taIncIni.value,
@@ -265,58 +267,78 @@ export default {
 
             resultados.value.push(datosMes1);
 
-            labels.value.push('Mes 1');
-            vivas.value.push(vacasIni);
-            // muertas.value.push(muerIni);
+    
       
-          // Calcular las tasas de letalidad, mortalidad e incidencia para los meses siguientes
+         //Comenzando desde el segundo mes en adelante
           for (let i = 1; i < meses; i++) {
-            
+              // Actualizar el total de muertes sumando las muertes esperadas para este mes
+              muertesTotales.value = parseInt(muertesTotales.value) + muertasMes; 
+
+              // Actualizar el total de infectadas sumando las muertes esperadas para este mes
+              infectadasTotales.value = parseInt(infectadasTotales.value) + infectadasMes; 
+
             // Calcular el número de vacas restantes para el mes siguiente
-            vacasRestantes -= muertasMes;
-            console.log("Número de vacas restantes para el siguiente mes", i + 1, ":", vacasRestantes);
+            if(i>1){
+              vacasRestantes.value = vacasRestantes.value - muertasMes;
+            }else{
+              vacasRestantes.value = vacasRestantes.value
+            }
+
+
+            //Calculando las tasas de ese mes
+            taLeIni.value =(muertasMes / infectadasMes).toFixed(2);
+            taMoIni.value = (muertesTotales.value  / vacasRestantes.value).toFixed(2);
+            taIncIni.value = Math.round((infectadasMes / vacasRestantes.value)*1000);
       
+ 
             // Calcular el número de vacas infectadas para el mes siguiente
-            infectadasMes = Math.round((taIncIni.value / 1000) * vacasRestantes);
-            console.log("Número de vacas infectadas para el mes", i + 1, ":", infectadasMes);
+            infectadasMes = Math.round((taIncIni.value / 1000) * vacasRestantes.value);
+        
       
             // Calcular el número de vacas muertas para el mes siguiente
             muertasMes = Math.round(infectadasMes * taLeIni.value);
-            console.log("Número de vacas muertas para el mes", i + 1, ":", muertasMes);
 
-            muertesTotales = muertesTotales + muertasMes; // Actualizar el total de muertes
-            infectadasTotales = infectadasTotales + infectadasMes; // Actualizar el total de infectadas
+          //Condicionales de 2 casos, 1:Cuando sea el ultimo mes se obtienen los valores de las muertes
+          //e infectados correspondientes para que la sumatoria de muertas y vivas de el valor inicial
+          //2: El caso donde tenemos mas infectadas que numero de vacas iniciales donde la mortalidad
+          //ya da el 100% o cerca de el.
+         if (i == meses - 1) {
+              muertesTotales.value=muertesTotales.value - muertasMes
+              infectadasTotales.value=infectadasTotales.value - infectadasMes
+              console.log("Hola final")
+         } 
+           if(taMoIni.value *100 > 100 || infectadasTotales.value > vacasIni ){
+              muertesTotales.value=vacasIni
+              infectadasTotales.value=vacasIni
+              vacasRestantes.value=0
+              taMoIni.value = (muertesTotales.value  / vacasIni).toFixed(2);
+              infectadasMes=0
+              muertasMes=0
+              console.log("Entro")
+     
+            }
 
-            console.log("Muertas totales al final del mes:",  muertesTotales);
-            console.log("Infectadas totales al final del mes:", infectadasTotales);
-
-            taLeIni.value =(muertasMes / infectadasMes).toFixed(2);
-            taMoIni.value = (muertasMes / vacasRestantes).toFixed(2);
-            taIncIni.value = Math.round((infectadasMes / vacasRestantes)*1000);
-      
-            console.log("Tasa de letalidad para el mes", i + 1, ":", taLeIni.value);
-            console.log("Tasa de mortalidad para el mes", i + 1, ":", taMoIni.value);
-            console.log("Tasa de incidencia para el mes", i + 1, ":", taIncIni.value);
-
-        
-
+                
             let datosMes = {
               mes: `Mes ${i+1}`,
               ti: taIncIni.value,
               tm: taMoIni.value,
               tl: taLeIni.value,
-              vivas: vacasRestantes,
-              infectadas: infectadasTotales,
-              muertas: muertesTotales,
+              vivas: vacasRestantes.value,
+              infectadas: infectadasTotales.value,
+              muertas: muertesTotales.value,
               inMes: infectadasMes,
               mueIn: muertasMes
             };
 
              // Agregar el objeto al array de resultados
              resultados.value.push(datosMes);
-             labels.value.push(`Mes ${i+1}`);
-            //  vivas.value.push(vacasRestantes)
-            //  muertas.value.push(infectadasTotales)
+
+             //Condicional para terminar el bucle en el caso de que las vacas restantes sean 0 o la mortalidad es mayor a 100%
+             if( vacasRestantes.value==0){
+              break;
+              // taMoIni.value *100 > 100 ||
+            }
           }
             } else {
               console.error("El número de vacas inicial ingresado no es válido.");
@@ -325,8 +347,10 @@ export default {
             console.log(resultados.value)
     };
 
-    //NOTA: Hay que hacer el caso de que si las vacas que quedan son 0 que pare el ciclo y revisar los calculos
 
+   
+
+  //Funcion para guardar los datos ingresados
     const onSubmit = async () => {
       modelo(
         form.value.vacasIni,
@@ -336,17 +360,30 @@ export default {
       );
     };
 
+
     const isGraphVisible = ref(false);
     const isCalcVisible = ref(true);
     const isTableVisible = ref(false);
 
+
+    let myChart=null;
     //CARGAMOS EL GRAFICO
+    const cargarDataGraf=()=>{
+      labels.value=[]
+      muertas.value=[]
+      vivas.value=[]
+      for(let j=0; j<resultados.value.length;j++){
+        labels.value.push(resultados.value[j].mes)
+        vivas.value.push(resultados.value[j].vivas)
+        muertas.value.push(resultados.value[j].muertas)
+      }
+
+      cargarGraf()
+    }
+   
     const cargarGraf = () => {
       const ctx = document.getElementById("myChart");
-
       if (ctx) {
-
-
         const data2 = {
           labels: labels.value,
           datasets: [
@@ -365,7 +402,11 @@ export default {
           ],
         };
 
-        new Chart(ctx, {
+        if(myChart != null){
+          myChart.destroy();
+          myChart=null;
+        }
+       myChart= new Chart(ctx, {
           type: "line",
           data: data2,
           options: {
@@ -384,10 +425,9 @@ export default {
       }
     };
 
-    onMounted(() => {
-      cargarGraf();
-    });
+    //Funciones para desplegar los elementos
     const showCardGraph = () => {
+      cargarDataGraf();
       isGraphVisible.value = true;
       isTableVisible.value = false;
       isCalcVisible.value = false;
@@ -403,69 +443,7 @@ export default {
       isCalcVisible.value = false;
     };
 
-    //CARGAMOS LA TABLA
-    const data = [
-      {
-        meses: "Mes 1",
-        vivas: 500,
-        infec: 20,
-        muert: 60,
-      },
-      {
-        meses: "Mes 2",
-        vivas: 400,
-        infec: 20,
-        muert: 60,
-      },
-      {
-        meses: "Mes 3",
-        vivas: 367,
-        infec: 20,
-        muert: 60,
-      },
-      {
-        meses: "Mes 4",
-        vivas: 500,
-        infec: 20,
-        muert: 60,
-      },
-    ];
-
-    const calculos = [
-      {
-        mes: "Mes 1",
-        ti: 97,
-        tm: 92,
-        tl: 23,
-        vivas: 23,
-        infectadas: 43,
-        muertas: 54,
-        inMes: 34,
-        mueIn: 34,
-      },
-      {
-        mes: "Mes 2",
-        ti: 97,
-        tm: 92,
-        tl: 23,
-        vivas: 23,
-        infectadas: 43,
-        muertas: 54,
-        inMes: 34,
-        mueIn: 34,
-      },
-      {
-        mes: "Mes 3",
-        ti: 97,
-        tm: 92,
-        tl: 23,
-        vivas: 23,
-        infectadas: 43,
-        muertas: 54,
-        inMes: 34,
-        mueIn: 34,
-      },
-    ];
+  
 
     return {
       form,
@@ -476,10 +454,11 @@ export default {
       isGraphVisible,
       isCalcVisible,
       isTableVisible,
-      data,
-      calculos,
       onSubmit,
-      resultados
+      resultados,
+      muertesTotales,
+      infectadasTotales,
+      vacasRestantes,
     };
   },
 };
