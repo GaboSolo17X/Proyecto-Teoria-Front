@@ -1,61 +1,8 @@
 <template>
   <div>
-    <Nav class="navbar"></Nav>
     <container class="cont">
       <div class="data">
-        <v-card variant="outlined" class="mess">
-          <v-card-text> Informacion sobre el ganado y el tiempo </v-card-text>
-        </v-card>
-        <v-card variant="outlined" class="formu">
-          <v-form @submit.prevent="onSubmit">
-            <v-text-field
-              height="150"
-              variant="solo"
-              rounded="xl"
-              v-model="form.meses"
-              label="Cantidad de meses:"
-              :rules="[(v) => /^\d+$/.test(v)||'Solo se permiten dígitos']"
-            ></v-text-field>
-
-            <v-select
-              rounded="xl"
-              v-model="form.condicion"
-              label="Condición del ganado:"
-              :items="['Óptimo', 'Deplorable']"
-              variant="solo"
-            ></v-select>
-
-            <div class="condi" v-if="mensajeCondicion">{{ mensajeCondicion }}</div>
-
-            <v-text-field
-              variant="solo"
-              rounded="xl"
-              v-model="form.vacasIni"
-              label="Números de vacas inicial:"
-              :rules="[(v) => /^\d+$/.test(v)||'Solo se permiten dígitos']"
-            ></v-text-field>
-
-            <v-text-field
-              height="37px"
-              variant="solo"
-              rounded="xl"
-              v-model="form.vacasInf"
-              label="Números de vacas infectadas:"
-              :rules="[(v) => /^\d+$/.test(v)||'Solo se permiten dígitos']"
-            ></v-text-field>
-
-            <v-text-field
-              variant="solo"
-              rounded="xl"
-              v-model="form.vacasMue"
-              label="Números de vacas muertas:"
-              :rules="[(v) => /^\d+$/.test(v)||'Solo se permiten dígitos']"
-            ></v-text-field>
-
-            <v-btn class="mt-2" type="submit" rounded="xl" block>Simular</v-btn>
-          </v-form>
-          <v-btn class="mt-2 guardar" rounded="xl" block>Guardar</v-btn>
-        </v-card>
+        
       </div>
       <div class="info">
         <div class="infoVac">
@@ -196,7 +143,7 @@
 </template>
 
 <script>
-import Nav from "../components/navbar.vue";
+import Nav from "./navbar.vue";
 import { ref, watch } from "vue";
 import Chart from "chart.js/auto";
 
