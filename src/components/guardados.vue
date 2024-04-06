@@ -1,41 +1,18 @@
 <template>
   <div>
     <container class="cont">
-      <div class="data">
-        
-      </div>
       <div class="info">
         <div class="infoVac">
-          <v-card variant="outlined">
-            <v-row>
-              <v-col>
-                <div class="final">
-                  <img cover src="../assets/cow.png" class="icon" />
-                  <v-row class="cow">
-                    <font-awesome-icon icon="fa-solid fa-skull" />
-                    <p>{{muertesTotales}}</p>
-                  </v-row>
-                </div>
-              </v-col>
-              <v-col>
-                <div class="final2">
-                  <img cover src="../assets/cow.png" class="icon" />
-                  <v-row class="cow">
-                    <font-awesome-icon icon="fa-solid fa-virus" />
-                    <p>{{infectadasTotales}}</p>
-                  </v-row>
-                </div>
-              </v-col>
-              <v-col>
-                <div class="final3">
-                  <img cover src="../assets/cow.png" class="icon" />
-                  <v-row class="cow">
-                    <font-awesome-icon icon="fa-solid fa-heart-pulse" />
-                    <p>{{vacasRestantes}}</p>
-                  </v-row>
-                </div>
-              </v-col>
-            </v-row>
+          <v-card variant="outlined" class="saved"  >
+              
+              <v-btn
+              v-for="item in guardados":key="item.numeroSimu"
+                class="mt-2"
+                rounded="xl"
+                id="seleBoton"
+                @click="showSimulacion(item.numeroSimu)"
+                >Simu {{item.numeroSimu}}</v-btn
+              >
           </v-card>
         </div>
         <div class="calc">
@@ -48,8 +25,7 @@
                   rounded="xl"
                   block
                   @click="showCardCalc"
-                  >Cálculos</v-btn
-                >
+                  >Cálculos</v-btn>
               </v-col>
               <v-col>
                 <v-btn
@@ -82,13 +58,13 @@
                 <v-card>
                   <v-row>
                     <v-col>
-                      <span>Tasa de incidencia: {{ item.ti/1000 }} </span>
+                      <span>Tasa de incidencia: {{ item.ti / 1000 }} </span>
                     </v-col>
                     <v-col>
-                      <span>Tasa de mortalidad: {{ item.tm *100}}% </span>
+                      <span>Tasa de mortalidad: {{ item.tm * 100 }}% </span>
                     </v-col>
                     <v-col>
-                      <span> Tasa de letalidad: {{ item.tl *100 }}% </span>
+                      <span> Tasa de letalidad: {{ item.tl * 100 }}% </span>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -112,7 +88,7 @@
               </div>
             </div>
             <div class="rowGra mt-5 pa-6" v-show="isGraphVisible">
-              <canvas id="myChart"></canvas>
+              <canvas id="myChart2"></canvas>
             </div>
 
             <div class="rowTab mt-5" v-show="isTableVisible">
@@ -130,7 +106,7 @@
                     <td>{{ item.mes }}</td>
                     <td>{{ item.vivas }}</td>
                     <td>{{ item.infectadas }}</td>
-                    <td>{{ item.muertas  }}</td>
+                    <td>{{ item.muertas }}</td>
                   </tr>
                 </tbody>
               </v-table>
@@ -144,226 +120,130 @@
 
 <script>
 import Nav from "./navbar.vue";
-import { ref, watch } from "vue";
+import { ref, watchEffect} from "vue";
 import Chart from "chart.js/auto";
 
 export default {
   components: {
     Nav,
   },
-  setup() {
-  
-    const taMoIni = ref();
-    const taLeIni = ref();
-    const taIncIni = ref();
-    const resultados= ref([])
-    const labels= ref([])
-    const vivas= ref([])
-    const muertas= ref([])
-    const muertesTotales = ref()
-    const infectadasTotales = ref()
-    const vacasRestantes = ref()
-    const vacasResMes=ref()
-    const mensajeCondicion=ref()
-    const isFormValid=ref()
+  props: {
+    datos: { type: Array },
+  },
 
-    const form = ref({
-      meses: "",
-      condicion: null,
-      vacasIni: "",
-      vacasInf: "",
-      vacasMue: "",
-    });
+  setup(props) {
 
-
-    const modelo = (vacasIni, infecIni, muerIni, meses) => {
-      resultados.value=[];
-      if (!isNaN(meses) && meses > 0) {
-
-         // Inicializar el total de muertes con las muertes iniciales
-          muertesTotales.value = muerIni; 
-
-          // Inicializar el total de infectadas con las infectadas iniciales
-          infectadasTotales.value = infecIni; 
-
-     
-          taLeIni.value = (muerIni / infecIni).toFixed(2);
-          taMoIni.value = (muerIni / vacasIni).toFixed(2);
-          taIncIni.value = Math.round((infecIni / vacasIni)*1000);
-          console.log("Tasa de letalidad inicial:", taLeIni.value);
-          console.log("Tasa de mortalidad inicial:", taMoIni.value);
-          console.log("Tasa de incidencia inicial:", taIncIni.value);
-      
-          // Calcular el número de vacas restantes para el siguiente mes
-          vacasRestantes.value = Math.round(vacasIni - muerIni);
-          vacasResMes.value=vacasRestantes.value
-          console.log("Número de vacas restantes:", vacasRestantes.value);
-      
-          // Calcular el número de vacas infectadas para el siguiente mes
-          let infectadasMes = Math.round((taIncIni.value / 1000) * vacasRestantes.value);
-          console.log("Número de vacas infectadas para el primer mes:", infectadasMes);
-      
-          // Calcular el número de vacas muertas para el siguiente mes
-          let muertasMes = Math.round(infectadasMes * taLeIni.value);
-          console.log("Número de vacas muertas para el primer mes:", muertasMes);
-
-          //Guardamos los calculos del mes 1 con los cuales empezaremos los siguientes meses
-          let datosMes1 = {
-              mes: `Mes 1`,
-              ti: taIncIni.value,
-              tm: taMoIni.value,
-              tl: taLeIni.value,
-              vivas: parseInt(vacasIni),
-              infectadas: parseInt(infecIni),
-              muertas: parseInt(muerIni),
-              inMes: infectadasMes,
-              mueIn: muertasMes
-            };
-
-            resultados.value.push(datosMes1);
-
+    const resultados = ref([]);
+    const labels = ref([]);
+    const vivas = ref([]);
+    const muertas = ref([]);
+    const guardados=ref([])
     
-      
-         //Comenzando desde el segundo mes en adelante
-          for (let i = 1; i < meses; i++) {
-              // Actualizar el total de muertes sumando las muertes esperadas para este mes
-              muertesTotales.value = parseInt(muertesTotales.value) + muertasMes; 
+    console.log(props.datos)
+  //   if(props.datos!=null || props.datos!=''||props.datos!=[]){
+  //     console.log('Hay datos aqui')
+  //     const guardadoSimu={
+  //     numeroSimu:guardados.value.length +1,
+  //     data:props.datos
+  //   }
+    
+  //   guardados.value.push(guardadoSimu)
 
-              // Actualizar el total de infectadas sumando las muertes esperadas para este mes
-              infectadasTotales.value = parseInt(infectadasTotales.value) + infectadasMes; 
+  // }
 
-            // Calcular el número de vacas restantes para el mes siguiente
-            if(i>1){
-              vacasRestantes.value = vacasRestantes.value - muertasMes;
-            }else{
-              vacasRestantes.value = vacasRestantes.value
-            }
+  watchEffect(() => {
+      if (props.datos && props.datos.length > 0) {
+        console.log('Hay datos aquí');
+        const guardadoSimu = {
+          numeroSimu: guardados.value.length + 1,
+          data: props.datos
+        };
 
-
-            //Calculando las tasas de ese mes
-            taLeIni.value =(muertasMes / infectadasMes).toFixed(2);
-            taMoIni.value = (muertesTotales.value  / vacasRestantes.value).toFixed(2);
-            taIncIni.value = Math.round((infectadasMes / vacasRestantes.value)*1000);
-      
- 
-            // Calcular el número de vacas infectadas para el mes siguiente
-            infectadasMes = Math.round((taIncIni.value / 1000) * vacasRestantes.value);
-        
-      
-            // Calcular el número de vacas muertas para el mes siguiente
-            muertasMes = Math.round(infectadasMes * taLeIni.value);
-
-          //Condicionales de 2 casos, 1:Cuando sea el ultimo mes se obtienen los valores de las muertes
-          //e infectados correspondientes para que la sumatoria de muertas y vivas de el valor inicial
-          //2: El caso donde tenemos mas infectadas que numero de vacas iniciales donde la mortalidad
-          //ya da el 100% o cerca de el.
-         if (i == meses - 1) {
-              muertesTotales.value=muertesTotales.value - muertasMes
-              infectadasTotales.value=infectadasTotales.value - infectadasMes
-              console.log("Hola final")
-         } 
-           if(taMoIni.value *100 > 100 || infectadasTotales.value > vacasIni ){
-              muertesTotales.value=vacasIni
-              infectadasTotales.value=vacasIni
-              vacasRestantes.value=0
-              taMoIni.value = (muertesTotales.value  / vacasIni).toFixed(2);
-              infectadasMes=0
-              muertasMes=0
-              console.log("Entro")
-     
-            }
-
-                
-            let datosMes = {
-              mes: `Mes ${i+1}`,
-              ti: taIncIni.value,
-              tm: taMoIni.value,
-              tl: taLeIni.value,
-              vivas: vacasRestantes.value,
-              infectadas: infectadasTotales.value,
-              muertas: muertesTotales.value,
-              inMes: infectadasMes,
-              mueIn: muertasMes
-            };
-
-             // Agregar el objeto al array de resultados
-             resultados.value.push(datosMes);
-
-             //Condicional para terminar el bucle en el caso de que las vacas restantes sean 0 o la mortalidad es mayor a 100%
-             if( vacasRestantes.value==0){
-              break;
-              // taMoIni.value *100 > 100 ||
-            }
-          }
-            } else {
-              console.error("El número de vacas inicial ingresado no es válido.");
-            }
-
-            console.log(resultados.value)
-    };
-
-
-
-    watch(() => form.value.condicion, (nuevaCondicion) => {
-      console.log(nuevaCondicion)
-      if (nuevaCondicion === 'Óptimo') {
-        mensajeCondicion.value = 'No puede colocar un valor mayor al 60% del total de las vacas en los infectados y las muertes deben ser menor al 20% de las infectadas';
-      } else if (nuevaCondicion === 'Deplorable') {
-        mensajeCondicion.value = 'No puede colocar un valor menor al 40% del total de las vacas en los infectados y las muertes deben ser mayor al 80% de las infectadas';
-      } else {
-        mensajeCondicion.value = ''; // Resetear el mensaje si es necesario
+        guardados.value.push(guardadoSimu);
       }
     });
+
    
-  //   const validateForm = () => {
-  //    if (
-  //      form.value.vacasIni &&
-  //      form.value.vacasInf &&
-  //      form.value.vacasMue &&
-  //      form.value.meses &&
-  //      form.value.condicion 
-  //    ) {
-  //      isFormValid.value = true;
-  //    } else {
-  //      isFormValid.value = false;
-  //    }
-  //  };
 
-  //Funcion para guardar los datos ingresados
-    const onSubmit = async () => {
-        modelo(
-        form.value.vacasIni,
-        form.value.vacasInf,
-        form.value.vacasMue,
-        form.value.meses
-      );
-      
 
-    };
 
+    guardados.value=[
+      {
+        numeroSimu: 1,
+        data: [
+          {
+            inMes: 4,
+            infectadas: 5,
+            mes: "Mes 1",
+            mueIn: 2,
+            muertas: 2,
+            ti: 278,
+            tl: "0.40",
+            tm: "0.11",
+            vivas: 18
+          },
+          {
+            inMes: 4,
+            infectadas: 9,
+            mes: "Mes 2",
+            mueIn: 2,
+            muertas: 4,
+            ti: 250,
+            tl: "0.50",
+            tm: "0.25",
+            vivas: 16,
+          },
+          {
+            inMes: 4,
+            infectadas: 13,
+            mes: "Mes 3",
+            mueIn: 2,
+            muertas: 6,
+            ti: 286,
+            tl: "0.50",
+            tm: "0.43",
+            vivas: 14,
+          }
+          
+        ],
+
+      },
+     
+    ]
+  
+    
+    function showSimulacion(valor) {
+      console.log(valor)
+
+      for (let i=0; i<guardados.value.length;i++)
+      if(valor == guardados.value[i].numeroSimu){
+        console.log(guardados.value[i].data)
+        resultados.value = guardados.value[i].data;
+        console.log( 'Resultados '+ resultados.value)
+      }
+    }
 
     const isGraphVisible = ref(false);
     const isCalcVisible = ref(true);
     const isTableVisible = ref(false);
 
-
-    let myChart=null;
+    let myChart = null;
     //CARGAMOS EL GRAFICO
-    const cargarDataGraf=()=>{
-      labels.value=[]
-      muertas.value=[]
-      vivas.value=[]
-      for(let j=0; j<resultados.value.length;j++){
-        labels.value.push(resultados.value[j].mes)
-        vivas.value.push(resultados.value[j].vivas)
-        muertas.value.push(resultados.value[j].muertas)
+    const cargarDataGraf = () => {
+      labels.value = [];
+      muertas.value = [];
+      vivas.value = [];
+      for (let j = 0; j < resultados.value.length; j++) {
+        labels.value.push(resultados.value[j].mes);
+        vivas.value.push(resultados.value[j].vivas);
+        muertas.value.push(resultados.value[j].muertas);
       }
 
-      cargarGraf()
-    }
-   
+      cargarGraf();
+    };
+
     const cargarGraf = () => {
-      const ctx = document.getElementById("myChart");
+      const ctx = document.getElementById("myChart2");
       if (ctx) {
         const data2 = {
           labels: labels.value,
@@ -383,11 +263,11 @@ export default {
           ],
         };
 
-        if(myChart != null){
+        if (myChart != null) {
           myChart.destroy();
-          myChart=null;
+          myChart = null;
         }
-       myChart= new Chart(ctx, {
+        myChart = new Chart(ctx, {
           type: "line",
           data: data2,
           options: {
@@ -424,23 +304,17 @@ export default {
       isCalcVisible.value = false;
     };
 
-  
-
     return {
-      form,
       showCardTable,
       showCardGraph,
       showCardCalc,
+      showSimulacion,
       cargarGraf,
+      guardados,
       isGraphVisible,
       isCalcVisible,
       isTableVisible,
-      onSubmit,
       resultados,
-      muertesTotales,
-      infectadasTotales,
-      vacasRestantes,
-      mensajeCondicion,
     };
   },
 };
@@ -455,14 +329,7 @@ export default {
   margin-top: -20px;
   background-color: #e5ddcb;
   font-family: "Days One", sans-serif;
-}
-
-.data {
-  width: 400px;
-  /* background-color: aqua; */
-  padding-left: 40px;
-  padding-right: 40px;
-  padding-top: 20px;
+  margin-top: 10px;
 }
 
 .info {
@@ -572,14 +439,24 @@ export default {
   height: 90%;
 }
 
-.condi{
-  color:#cf4647;
-  font-size:0.7rem;
+.condi {
+  color: #cf4647;
+  font-size: 0.7rem;
   margin-bottom: 5px;
   margin-top: -10px;
 }
 
-.guardar{
-  background-color:#2e97b7 !important;
+.guardar {
+  background-color: #2e97b7 !important;
+}
+
+.saved{
+  display: flow;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.saved .v-btn{
+  width: 100px !important;
+  margin-right: 20px;
 }
 </style>

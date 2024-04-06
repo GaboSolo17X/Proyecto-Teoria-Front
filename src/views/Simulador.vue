@@ -54,10 +54,11 @@
 
             <v-btn class="mt-2" type="submit" rounded="xl" block>Simular</v-btn>
           </v-form>
-          <v-btn class="mt-2 guardar" rounded="xl" block>Guardar</v-btn>
+          <v-btn class="mt-2 guardar" rounded="xl" @click="guardarSimu" block>Guardar</v-btn>
+          <v-btn class="mt-2 guardados" rounded="xl" block @click="showGuardados">Guardados</v-btn>
         </v-card>
       </div>
-      <div class="info">
+      <div class="info" v-show="isSimuVisible">
         <div class="infoVac">
           <v-card variant="outlined">
             <v-row>
@@ -191,18 +192,21 @@
           </v-card>
         </div>
       </div>
+      <Save class="info" :datos="simuGuardada" v-if="isSaveVisible" ></Save>
     </container>
   </div>
 </template>
 
 <script>
 import Nav from "../components/navbar.vue";
+import Save from "../components/guardados";
 import { ref, watch } from "vue";
 import Chart from "chart.js/auto";
 
 export default {
   components: {
     Nav,
+    Save,
   },
   setup() {
   
@@ -218,7 +222,7 @@ export default {
     const vacasRestantes = ref()
     const vacasResMes=ref()
     const mensajeCondicion=ref()
-    const isFormValid=ref()
+  
 
     const form = ref({
       meses: "",
@@ -368,37 +372,17 @@ export default {
       }
     });
    
-  //   const validateForm = () => {
-  //    if (
-  //      form.value.vacasIni &&
-  //      form.value.vacasInf &&
-  //      form.value.vacasMue &&
-  //      form.value.meses &&
-  //      form.value.condicion 
-  //    ) {
-  //      isFormValid.value = true;
-  //    } else {
-  //      isFormValid.value = false;
-  //    }
-  //  };
-
+ 
   //Funcion para guardar los datos ingresados
     const onSubmit = async () => {
+      showSimu()
         modelo(
         form.value.vacasIni,
         form.value.vacasInf,
         form.value.vacasMue,
         form.value.meses
       );
-      
-
     };
-
-
-    const isGraphVisible = ref(false);
-    const isCalcVisible = ref(true);
-    const isTableVisible = ref(false);
-
 
     let myChart=null;
     //CARGAMOS EL GRAFICO
@@ -459,6 +443,34 @@ export default {
       }
     };
 
+
+    const isGraphVisible = ref(false);
+    const isCalcVisible = ref(true);
+    const isTableVisible = ref(false);
+    const isSaveVisible = ref(false);
+    const isSimuVisible = ref(true);
+    const simuGuardada= ref([]);
+
+    const guardarSimu = ()=>{
+      simuGuardada.value = resultados.value
+      console.log('Guardando'+simuGuardada.value)
+      showGuardados()
+    }
+
+
+    const showSimu = () =>{
+      isSaveVisible.value=false;
+      isSimuVisible.value=true;
+    }
+
+    const showGuardados = () =>{
+   
+      isSaveVisible.value=true;
+      isSimuVisible.value=false;
+      console.log('mostrando guardado')
+      console.log(simuGuardada.value) 
+    }
+
     //Funciones para desplegar los elementos
     const showCardGraph = () => {
       cargarDataGraf();
@@ -485,15 +497,21 @@ export default {
       showCardGraph,
       showCardCalc,
       cargarGraf,
+      showSimu,
+      showGuardados,
+      guardarSimu,
       isGraphVisible,
       isCalcVisible,
       isTableVisible,
+      isSaveVisible,
+      isSimuVisible,
       onSubmit,
       resultados,
       muertesTotales,
       infectadasTotales,
       vacasRestantes,
       mensajeCondicion,
+      simuGuardada
     };
   },
 };
@@ -634,5 +652,10 @@ export default {
 
 .guardar{
   background-color:#2e97b7 !important;
+}
+
+.guardados{
+  background-color:#fdf4b0 !important;
+  color:#524656 !important;
 }
 </style>
