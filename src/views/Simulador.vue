@@ -170,7 +170,7 @@
             </div>
 
             <div class="rowTab mt-5" v-show="isTableVisible">
-              <v-table height="600px" fixed-header>
+              <v-table height="450px" fixed-header>
                 <thead>
                   <tr>
                     <th class="text-left">Mes</th>
@@ -287,7 +287,7 @@ export default {
               muertesTotales.value = parseInt(muertesTotales.value) + muertasMes; 
 
               // Actualizar el total de infectadas sumando las muertes esperadas para este mes
-              infectadasTotales.value = parseInt(infectadasTotales.value) + infectadasMes; 
+              infectadasTotales.value = parseInt(infectadasTotales.value) + infectadasMes ; 
 
             // Calcular el número de vacas restantes para el mes siguiente
             if(i>1){
@@ -296,10 +296,17 @@ export default {
               vacasRestantes.value = vacasRestantes.value
             }
 
+            if(infectadasMes>vacasRestantes.value){
+              infectadasMes=vacasRestantes.value
+            }else{
+              infectadasMes=infectadasMes
+            }
+
+
 
             //Calculando las tasas de ese mes
             taLeIni.value =(muertasMes / infectadasMes).toFixed(2);
-            taMoIni.value = (muertesTotales.value  / vacasRestantes.value).toFixed(2);
+            taMoIni.value = (muertasMes  / vacasRestantes.value).toFixed(3);
             taIncIni.value = Math.round((infectadasMes / vacasRestantes.value)*1000);
       
  
@@ -310,19 +317,21 @@ export default {
             // Calcular el número de vacas muertas para el mes siguiente
             muertasMes = Math.round(infectadasMes * taLeIni.value);
 
+           
           //Condicionales de 2 casos, 1:Cuando sea el ultimo mes se obtienen los valores de las muertes
           //e infectados correspondientes para que la sumatoria de muertas y vivas de el valor inicial
           //2: El caso donde tenemos mas infectadas que numero de vacas iniciales donde la mortalidad
           //ya da el 100% o cerca de el.
          if (i == meses - 1) {
               muertesTotales.value=muertesTotales.value - muertasMes
-              infectadasTotales.value=infectadasTotales.value - infectadasMes
+              infectadasTotales.value=infectadasTotales.value
               console.log("Hola final")
          } 
-           if(taMoIni.value *100 > 100 || infectadasTotales.value > vacasIni ){
+           if(taMoIni.value *100 > 100 || muertesTotales.value > vacasIni ){
               muertesTotales.value=vacasIni
-              infectadasTotales.value=vacasIni
-              vacasRestantes.value=0
+              // infectadasTotales.value=vacasIni
+              taLeIni.value = 1;
+              taIncIni.value = 1000;
               taMoIni.value = (muertesTotales.value  / vacasIni).toFixed(2);
               infectadasMes=0
               muertasMes=0
@@ -385,6 +394,7 @@ export default {
     };
 
     let myChart=null;
+
     //CARGAMOS EL GRAFICO
     const cargarDataGraf=()=>{
       labels.value=[]

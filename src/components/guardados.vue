@@ -92,7 +92,7 @@
             </div>
 
             <div class="rowTab mt-5" v-show="isTableVisible">
-              <v-table height="600px" fixed-header>
+              <v-table height="450px" fixed-header>
                 <thead>
                   <tr>
                     <th class="text-left">Mes</th>
