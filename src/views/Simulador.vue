@@ -515,34 +515,55 @@ export default {
     const isSimuVisible = ref(true);
     const simuGuardada= ref([]);
     const nameSimu = ref();
+    // const datosPorEnviar= ref({})
 
     const onSave = ()=>{
       nameSimu.value=save.value.name
   
       console.log('AQUI SI')
         for(let i=0; i<resultados.value.length;i++){
+          // datosPorEnviar.value={}
           console.log('SI ENTRO')
-          pruebaRegistro(i,nameSimu)
+          pruebaRegistro(i,nameSimu.value,resultados.value[i])
+        //    datosPorEnviar.value = {
+        //     nombreSimulacion:name.value,
+        //     mes:resultados.mes,
+        //     inMes:resultados.inMes,
+        //     infectadas:resultados.infectadas,
+        //     mueIn:resultados.mueIn,
+        //     muertas:resultados.muertas,
+        //     ti:resultados.ti,
+        //     tl:resultados.tl,
+        //     tm:resultados.tm,
+        //     vivas:resultados.vivas,
+        //     curadas:resultados.curadas,
+        // };
+
+          
         }
         
         showGuardados()
     
     }
-
-    const pruebaRegistro=async(i,name)=>{
+   
+    const pruebaRegistro=async(i,name,resultados)=>{
   try {
     const formData=new FormData();
-    formData.append('nombreSimu',name.value);
-    formData.append('mes',resultados.value[i].mes);
-    formData.append('inMes',resultados.value[i].inMes);
-    formData.append('infectadas',resultados.value[i].infectadas);
-    formData.append('mueIn',resultados.value[i].mueIn);
-    formData.append('muertas',resultados.value[i].muertas);
-    formData.append('ti',resultados.value[i].ti);
-    formData.append('tl',resultados.value[i].tl);
-    formData.append('tm',resultados.value[i].tm);
-    formData.append('vivas',resultados.value[i].vivas);
-    formData.append('curadas',resultados.value[i].curadas);
+    formData.append("nombreSimulacion",name);
+    formData.append("mes",resultados.mes);
+    formData.append("inMes",resultados.inMes);
+    formData.append("infectadas",resultados.infectadas);
+    formData.append("mueIn",resultados.mueIn);
+    formData.append("muertas",resultados.muertas);
+    formData.append("ti",resultados.ti);
+    formData.append("tl",resultados.tl);
+    formData.append("tm",resultados.tm);
+    formData.append("vivas",resultados.vivas);
+    formData.append("curadas",resultados.curadas);
+    console.log("Guardando DATA")
+    console.log(resultados.mes)
+    console.log(formData)
+    console.log(formData.value)
     const res=await fetch('http://localhost:3000/api/simulaciones/add',{
       method:'POST',
       body: formData
