@@ -120,7 +120,7 @@
 
 <script>
 import Nav from "./navbar.vue";
-import { ref, watchEffect} from "vue";
+import { ref, watchEffect, onMounted} from "vue";
 import Chart from "chart.js/auto";
 
 export default {
@@ -286,6 +286,24 @@ export default {
         });
       }
     };
+    onMounted(async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/simulaciones/get',{
+          method:'GET',
+          headers:{
+            'Content-Type':'application/json'
+          }
+        });
+        const data = await res.json();
+        console.log('hola'+data.value)
+
+      } catch (error) {
+        console.error('Error al cargar los datos desde el archivo JSON:', error);
+      }
+
+  
+    });
+
 
     //Funciones para desplegar los elementos
     const showCardGraph = () => {
