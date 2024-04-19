@@ -54,7 +54,20 @@
 
             <v-btn class="mt-2" type="submit" rounded="xl" block>Simular</v-btn>
           </v-form>
-          <v-btn class="mt-2 guardar" rounded="xl" @click="guardarSimu" block>Guardar</v-btn>
+
+          <v-form @submit.prevent="onSave">
+            <v-text-field
+              height="150"
+              variant="solo"
+              rounded="xl"
+              v-model="save.name"
+              label="Nombre de la simulacion"
+              :rules="[v => !!v || 'Este campo es obligatorio']"
+            ></v-text-field>
+
+            <v-btn class="mt-2 guardar" rounded="xl" @click="onSave" block>Guardar</v-btn>
+          </v-form>
+        
           <v-btn class="mt-2 guardados" rounded="xl" block @click="showGuardados">Guardados</v-btn>
         </v-card>
       </div>
@@ -175,7 +188,7 @@
                   <tr>
                     <th class="text-left">Mes</th>
                     <th class="text-left">Vivas</th>
-                    <th class="text-left">Infectadas</th>
+                    <th class="text-left">Cantidad de veces Infectadas</th>
                     <th class="text-left">Muertas</th>
                   </tr>
                 </thead>
@@ -192,7 +205,7 @@
           </v-card>
         </div>
       </div>
-      <Save class="info" :datos="simuGuardada" v-if="isSaveVisible" ></Save>
+      <Save class="info" :datos="simuGuardada" :name="nameSimu" v-if="isSaveVisible" ></Save>
     </container>
   </div>
 </template>
@@ -200,7 +213,7 @@
 <script>
 import Nav from "../components/navbar.vue";
 import Save from "../components/guardados";
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import Chart from "chart.js/auto";
 
 export default {
@@ -217,10 +230,14 @@ export default {
     const labels= ref([])
     const vivas= ref([])
     const muertas= ref([])
+    const curadas= ref([])
+    const infectadas= ref([])
     const muertesTotales = ref()
     const infectadasTotales = ref()
+    const curadasTotales = ref()
     const vacasRestantes = ref()
     const vacasResMes=ref()
+    const curadasIni=ref()
     const mensajeCondicion=ref()
   
 
@@ -232,6 +249,12 @@ export default {
       vacasMue: "",
     });
 
+    
+    const save = ref({
+      name: "",
+ 
+    });
+
 
     const modelo = (vacasIni, infecIni, muerIni, meses) => {
       resultados.value=[];
@@ -241,7 +264,13 @@ export default {
           muertesTotales.value = muerIni; 
 
           // Inicializar el total de infectadas con las infectadas iniciales
-          infectadasTotales.value = infecIni; 
+          infectadasTotales.value = infecIni;
+          
+         curadasIni.value= Math.floor(Math.random() * (infecIni-muerIni));
+         console.log(curadasIni.value)
+      
+
+          curadasTotales.value=curadasIni.value
 
      
           taLeIni.value = (muerIni / infecIni).toFixed(2);
@@ -268,13 +297,14 @@ export default {
           let datosMes1 = {
               mes: `Mes 1`,
               ti: taIncIni.value,
-              tm: taMoIni.value,
-              tl: taLeIni.value,
+              tm: parseFloat(taMoIni.value),
+              tl: parseFloat(taLeIni.value),
               vivas: parseInt(vacasIni),
               infectadas: parseInt(infecIni),
               muertas: parseInt(muerIni),
               inMes: infectadasMes,
-              mueIn: muertasMes
+              mueIn: muertasMes,
+              curadas: curadasIni.value,
             };
 
             resultados.value.push(datosMes1);
@@ -283,11 +313,17 @@ export default {
       
          //Comenzando desde el segundo mes en adelante
           for (let i = 1; i < meses; i++) {
+             let aleatorio
               // Actualizar el total de muertes sumando las muertes esperadas para este mes
               muertesTotales.value = parseInt(muertesTotales.value) + muertasMes; 
 
               // Actualizar el total de infectadas sumando las muertes esperadas para este mes
               infectadasTotales.value = parseInt(infectadasTotales.value) + infectadasMes ; 
+
+              aleatorio=Math.floor(Math.random() * (infectadasMes-muertasMes))
+              console.log(aleatorio)
+              curadasTotales.value = curadasTotales.value + aleatorio
+              console.log(curadasTotales.value )
 
             // Calcular el número de vacas restantes para el mes siguiente
             if(i>1){
@@ -325,17 +361,17 @@ export default {
          if (i == meses - 1) {
               muertesTotales.value=muertesTotales.value - muertasMes
               infectadasTotales.value=infectadasTotales.value
-              console.log("Hola final")
+
          } 
            if(taMoIni.value *100 > 100 || muertesTotales.value > vacasIni ){
               muertesTotales.value=vacasIni
-              // infectadasTotales.value=vacasIni
               taLeIni.value = 1;
               taIncIni.value = 1000;
               taMoIni.value = (muertesTotales.value  / vacasIni).toFixed(2);
               infectadasMes=0
               muertasMes=0
-              console.log("Entro")
+              vacasRestantes.value=0
+    
      
             }
 
@@ -343,22 +379,24 @@ export default {
             let datosMes = {
               mes: `Mes ${i+1}`,
               ti: taIncIni.value,
-              tm: taMoIni.value,
-              tl: taLeIni.value,
+              tm: parseFloat(taMoIni.value),
+              tl: parseFloat(taLeIni.value),
               vivas: vacasRestantes.value,
               infectadas: infectadasTotales.value,
               muertas: muertesTotales.value,
               inMes: infectadasMes,
-              mueIn: muertasMes
+              mueIn: muertasMes,
+              curadas:curadasTotales.value,
             };
 
              // Agregar el objeto al array de resultados
              resultados.value.push(datosMes);
 
              //Condicional para terminar el bucle en el caso de que las vacas restantes sean 0 o la mortalidad es mayor a 100%
-             if( vacasRestantes.value==0){
+             if( vacasRestantes.value==0 ){
               break;
               // taMoIni.value *100 > 100 ||
+              // || taMoIni.value == 1
             }
           }
             } else {
@@ -400,10 +438,14 @@ export default {
       labels.value=[]
       muertas.value=[]
       vivas.value=[]
+      curadas.value=[]
+      infectadas.value=[]
       for(let j=0; j<resultados.value.length;j++){
         labels.value.push(resultados.value[j].mes)
         vivas.value.push(resultados.value[j].vivas)
         muertas.value.push(resultados.value[j].muertas)
+        curadas.value.push(resultados.value[j].curadas)
+        infectadas.value.push(resultados.value[j].infectadas)
       }
 
       cargarGraf()
@@ -426,6 +468,18 @@ export default {
               data: muertas.value,
               borderColor: "blue",
               backgroundColor: "rgba(0, 0, 255, 0.5)",
+            },
+            {
+              label: "Cantidad de veces Curadas",
+              data: curadas.value,
+              borderColor: "green",
+              backgroundColor: "rgba(0, 255, 0, 0.5)",
+            },
+            {
+              label: "Cantidad de veces Infectadas",
+              data: infectadas.value,
+              borderColor: "orange",
+              backgroundColor: "rgba(255, 140, 0 , 0.5)",
             },
           ],
         };
@@ -460,13 +514,49 @@ export default {
     const isSaveVisible = ref(false);
     const isSimuVisible = ref(true);
     const simuGuardada= ref([]);
+    const nameSimu = ref();
 
-    const guardarSimu = ()=>{
-      simuGuardada.value = resultados.value
-      console.log('Guardando'+simuGuardada.value)
-      showGuardados()
+    const onSave = ()=>{
+      nameSimu.value=save.value.name
+  
+      console.log('AQUI SI')
+        for(let i=0; i<resultados.value.length;i++){
+          console.log('SI ENTRO')
+          pruebaRegistro(i,nameSimu)
+        }
+        
+        showGuardados()
+    
     }
 
+    const pruebaRegistro=async(i,name)=>{
+  try {
+    const formData=new FormData();
+    formData.append('nombreSimu',name.value);
+    formData.append('mes',resultados.value[i].mes);
+    formData.append('inMes',resultados.value[i].inMes);
+    formData.append('infectadas',resultados.value[i].infectadas);
+    formData.append('mueIn',resultados.value[i].mueIn);
+    formData.append('muertas',resultados.value[i].muertas);
+    formData.append('ti',resultados.value[i].ti);
+    formData.append('tl',resultados.value[i].tl);
+    formData.append('tm',resultados.value[i].tm);
+    formData.append('vivas',resultados.value[i].vivas);
+    formData.append('curadas',resultados.value[i].curadas);
+    const res=await fetch('http://localhost:3000/api/simulaciones/add',{
+      method:'POST',
+      body: formData
+     
+    });
+    const data=await res.json();
+    console.log(data.value.mensaje)
+
+
+  } catch (error) {
+    console.log(error)
+    
+  }
+}
 
     const showSimu = () =>{
       isSaveVisible.value=false;
@@ -499,29 +589,52 @@ export default {
       isCalcVisible.value = false;
     };
 
+    onMounted(async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/simulaciones/get',{
+          method:'GET',
+          headers:{
+            'Content-Type':'application/json'
+          }
+        });
+        const data = await res.json();
+        console.log('hola'+data.value)
+
+      } catch (error) {
+        console.error('Error al cargar los datos desde el archivo JSON:', error);
+      }
+
+  
+    });
+
+
+
   
 
     return {
       form,
+      save,
       showCardTable,
       showCardGraph,
       showCardCalc,
       cargarGraf,
       showSimu,
       showGuardados,
-      guardarSimu,
       isGraphVisible,
       isCalcVisible,
       isTableVisible,
       isSaveVisible,
       isSimuVisible,
       onSubmit,
+      onSave,
       resultados,
       muertesTotales,
       infectadasTotales,
       vacasRestantes,
       mensajeCondicion,
-      simuGuardada
+      simuGuardada,
+      nameSimu
+      
     };
   },
 };
@@ -582,7 +695,7 @@ export default {
 }
 
 .formu {
-  height: 80%;
+  height: 82%;
   padding: 10px;
   border-width: 4px;
   color: #524656;
@@ -592,6 +705,7 @@ export default {
 .formu .v-btn {
   background-color: #cf4647;
   color: white;
+  margin-bottom: 15px;
 }
 
 .v-text-field >>> label {

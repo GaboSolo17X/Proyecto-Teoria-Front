@@ -11,7 +11,7 @@
                 rounded="xl"
                 id="seleBoton"
                 @click="showSimulacion(item.numeroSimu)"
-                >Simu {{item.numeroSimu}}</v-btn
+                >{{item.numeroSimu}}</v-btn
               >
           </v-card>
         </div>
@@ -129,6 +129,7 @@ export default {
   },
   props: {
     datos: { type: Array },
+    name: String,
   },
 
   setup(props) {
@@ -155,7 +156,7 @@ export default {
       if (props.datos && props.datos.length > 0) {
         console.log('Hay datos aquí');
         const guardadoSimu = {
-          numeroSimu: guardados.value.length + 1,
+          numeroSimu: props.name,
           data: props.datos
         };
 
@@ -368,16 +369,11 @@ export default {
 }
 
 .formu {
-  height: 80%;
+  height: 84%;
   padding: 10px;
   border-width: 4px;
   color: #524656;
   border-color: #524656;
-}
-
-.formu .v-btn {
-  background-color: #cf4647;
-  color: white;
 }
 
 .v-text-field >>> label {
@@ -395,22 +391,13 @@ export default {
   align-items: center !important;
 }
 
-.final {
-  color: #cf4647;
-}
 .cow {
   display: flex;
   justify-content: center;
   font-size: 1.3rem;
 }
 
-.final2 {
-  color: #fdf4b0;
-}
 
-.final3 {
-  color: #2e97b7;
-}
 
 .final .icon,
 .final2 .icon,
