@@ -11,7 +11,7 @@
                 rounded="xl"
                 id="seleBoton"
                 @click="showSimulacion(item.numeroSimu)"
-                >Simu {{item.numeroSimu}}</v-btn
+                >{{item.numeroSimu}}</v-btn
               >
           </v-card>
         </div>
@@ -92,7 +92,7 @@
             </div>
 
             <div class="rowTab mt-5" v-show="isTableVisible">
-              <v-table height="600px" fixed-header>
+              <v-table height="450px" fixed-header>
                 <thead>
                   <tr>
                     <th class="text-left">Mes</th>
@@ -120,7 +120,7 @@
 
 <script>
 import Nav from "./navbar.vue";
-import { ref, watchEffect} from "vue";
+import { ref, watchEffect, onMounted} from "vue";
 import Chart from "chart.js/auto";
 
 export default {
@@ -129,6 +129,7 @@ export default {
   },
   props: {
     datos: { type: Array },
+    name: String,
   },
 
   setup(props) {
@@ -155,7 +156,7 @@ export default {
       if (props.datos && props.datos.length > 0) {
         console.log('Hay datos aquí');
         const guardadoSimu = {
-          numeroSimu: guardados.value.length + 1,
+          numeroSimu: props.name,
           data: props.datos
         };
 
@@ -285,6 +286,24 @@ export default {
         });
       }
     };
+    onMounted(async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/simulaciones/get',{
+          method:'GET',
+          headers:{
+            'Content-Type':'application/json'
+          }
+        });
+        const data = await res.json();
+        console.log('hola'+data.value)
+
+      } catch (error) {
+        console.error('Error al cargar los datos desde el archivo JSON:', error);
+      }
+
+  
+    });
+
 
     //Funciones para desplegar los elementos
     const showCardGraph = () => {
@@ -368,16 +387,11 @@ export default {
 }
 
 .formu {
-  height: 80%;
+  height: 84%;
   padding: 10px;
   border-width: 4px;
   color: #524656;
   border-color: #524656;
-}
-
-.formu .v-btn {
-  background-color: #cf4647;
-  color: white;
 }
 
 .v-text-field >>> label {
@@ -395,22 +409,13 @@ export default {
   align-items: center !important;
 }
 
-.final {
-  color: #cf4647;
-}
 .cow {
   display: flex;
   justify-content: center;
   font-size: 1.3rem;
 }
 
-.final2 {
-  color: #fdf4b0;
-}
 
-.final3 {
-  color: #2e97b7;
-}
 
 .final .icon,
 .final2 .icon,
