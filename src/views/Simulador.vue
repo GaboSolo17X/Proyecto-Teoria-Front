@@ -188,16 +188,20 @@
                   <tr>
                     <th class="text-left">Mes</th>
                     <th class="text-left">Vivas</th>
-                    <th class="text-left">Cantidad de veces Infectadas</th>
                     <th class="text-left">Muertas</th>
+                    <th class="text-left">Cantidad de veces Infectadas</th>
+                    <th class="text-left">Cantidad de veces Curadas</th>
+                    
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="item in resultados" :key="item.mes">
                     <td>{{ item.mes }}</td>
                     <td>{{ item.vivas }}</td>
-                    <td>{{ item.infectadas }}</td>
                     <td>{{ item.muertas  }}</td>
+                    <td>{{ item.infectadas }}</td>
+                    <td>{{ item.curadas }}</td>
+     
                   </tr>
                 </tbody>
               </v-table>
@@ -525,45 +529,33 @@ export default {
           // datosPorEnviar.value={}
           console.log('SI ENTRO')
           pruebaRegistro(i,nameSimu.value,resultados.value[i])
-        //    datosPorEnviar.value = {
-        //     nombreSimulacion:name.value,
-        //     mes:resultados.mes,
-        //     inMes:resultados.inMes,
-        //     infectadas:resultados.infectadas,
-        //     mueIn:resultados.mueIn,
-        //     muertas:resultados.muertas,
-        //     ti:resultados.ti,
-        //     tl:resultados.tl,
-        //     tm:resultados.tm,
-        //     vivas:resultados.vivas,
-        //     curadas:resultados.curadas,
-        // };
-
-          
+       
         }
         
         showGuardados()
     
     }
    
-    const pruebaRegistro=async(i,name,resultados)=>{
+    const pruebaRegistro=async(i,name,resultados2)=>{
   try {
+
+
     const formData=new FormData();
     formData.append("nombreSimulacion",name);
-    formData.append("mes",resultados.mes);
-    formData.append("inMes",resultados.inMes);
-    formData.append("infectadas",resultados.infectadas);
-    formData.append("mueIn",resultados.mueIn);
-    formData.append("muertas",resultados.muertas);
-    formData.append("ti",resultados.ti);
-    formData.append("tl",resultados.tl);
-    formData.append("tm",resultados.tm);
-    formData.append("vivas",resultados.vivas);
-    formData.append("curadas",resultados.curadas);
+    formData.append("mes",resultados2.mes);
+    formData.append("inMes",resultados2.inMes);
+    formData.append("infectadas",resultados2.infectadas);
+    formData.append("mueMes",resultados2.mueIn);
+    formData.append("muertas",resultados2.muertas);
+    formData.append("ti",resultados2.ti);
+    formData.append("tl",resultados2.tl);
+    formData.append("tm",resultados2.tm);
+    formData.append("vivas",resultados2.vivas);
+    formData.append("curadas",resultados.value[i].curadas);
     console.log("Guardando DATA")
-    console.log(resultados.mes)
+    console.log(resultados2.vivas)
+    console.log(resultados.value[i].curadas)
     console.log(formData)
-    console.log(formData.value)
     const res=await fetch('http://localhost:3000/api/simulaciones/add',{
       method:'POST',
       body: formData
@@ -609,11 +601,6 @@ export default {
       isTableVisible.value = true;
       isCalcVisible.value = false;
     };
-
-    
-
-
-  
 
     return {
       form,

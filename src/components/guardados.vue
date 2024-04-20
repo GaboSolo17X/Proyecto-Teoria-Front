@@ -6,12 +6,12 @@
           <v-card variant="outlined" class="saved"  >
               
               <v-btn
-              v-for="item in guardados":key="item.numeroSimu"
+              v-for="item in guardados":key="item.nombre"
                 class="mt-2"
                 rounded="xl"
                 id="seleBoton"
-                @click="showSimulacion(item.numeroSimu)"
-                >{{item.numeroSimu}}</v-btn
+                @click="showSimulacion(item.nombre)"
+                >{{item.nombre}}</v-btn
               >
           </v-card>
         </div>
@@ -97,16 +97,20 @@
                   <tr>
                     <th class="text-left">Mes</th>
                     <th class="text-left">Vivas</th>
-                    <th class="text-left">Infectadas</th>
                     <th class="text-left">Muertas</th>
+                    <th class="text-left">Cantidad de veces Infectadas</th>
+                    <th class="text-left">Cantidad de veces Curadas</th>
+                    
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="item in resultados" :key="item.mes">
                     <td>{{ item.mes }}</td>
                     <td>{{ item.vivas }}</td>
+                    <td>{{ item.muertas  }}</td>
                     <td>{{ item.infectadas }}</td>
-                    <td>{{ item.muertas }}</td>
+                    <td>{{ item.curadas }}</td>
+     
                   </tr>
                 </tbody>
               </v-table>
@@ -138,90 +142,56 @@ export default {
     const labels = ref([]);
     const vivas = ref([]);
     const muertas = ref([]);
+    const curadas = ref([]);
+    const infectadas = ref([]);
     const guardados=ref([])
     
-    console.log(props.datos)
-  //   if(props.datos!=null || props.datos!=''||props.datos!=[]){
-  //     console.log('Hay datos aqui')
-  //     const guardadoSimu={
-  //     numeroSimu:guardados.value.length +1,
-  //     data:props.datos
-  //   }
-    
-  //   guardados.value.push(guardadoSimu)
-
-  // }
-
-  watchEffect(() => {
-      if (props.datos && props.datos.length > 0) {
-        console.log('Hay datos aquí');
-        const guardadoSimu = {
-          numeroSimu: props.name,
-          data: props.datos
-        };
-
-        guardados.value.push(guardadoSimu);
-      }
-    });
-
-   
-
-
-
-    guardados.value=[
-      {
-        numeroSimu: 1,
-        data: [
-          {
-            inMes: 4,
-            infectadas: 5,
-            mes: "Mes 1",
-            mueIn: 2,
-            muertas: 2,
-            ti: 278,
-            tl: "0.40",
-            tm: "0.11",
-            vivas: 18
-          },
-          {
-            inMes: 4,
-            infectadas: 9,
-            mes: "Mes 2",
-            mueIn: 2,
-            muertas: 4,
-            ti: 250,
-            tl: "0.50",
-            tm: "0.25",
-            vivas: 16,
-          },
-          {
-            inMes: 4,
-            infectadas: 13,
-            mes: "Mes 3",
-            mueIn: 2,
-            muertas: 6,
-            ti: 286,
-            tl: "0.50",
-            tm: "0.43",
-            vivas: 14,
+    onMounted(async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/simulaciones/get',{
+          method:'GET',
+          headers:{
+            'Content-Type':'application/json'
           }
-          
-        ],
+        });
+        const rows = await res.json();
+        console.log(rows)
+        console.log(rows.data)
 
-      },
-     
-    ]
+ 
+        const guardadosData = {};
+
+        rows.data.forEach((dato) => {
+          if (!guardadosData[dato.nombreSimulacion]) {
+            guardadosData[dato.nombreSimulacion] = { nombre: dato.nombreSimulacion, data: [] };
+          }
+          guardadosData[dato.nombreSimulacion].data.push({ inMes: dato.inMes, infectadas: dato.infectadas, mes: dato.mes, mueIn: dato.mueMes, muertas: dato.muertas, ti: dato.ti, tl: dato.tl, tm: dato.tm, vivas: dato.vivas, curadas: dato.curadas });
+        });
+
+        guardados.value = Object.values(guardadosData);
+
+        console.log(guardados.value);
+
+      } catch (error) {
+        console.error('Error al cargar los datos desde el archivo JSON:', error);
+      }
+
   
+    });
     
+ 
+
     function showSimulacion(valor) {
       console.log(valor)
 
-      for (let i=0; i<guardados.value.length;i++)
-      if(valor == guardados.value[i].numeroSimu){
-        console.log(guardados.value[i].data)
-        resultados.value = guardados.value[i].data;
-        console.log( 'Resultados '+ resultados.value)
-      }
+      for (let i = 0; i < guardados.value.length; i++) {
+        console.log("entro al for " + i);
+        if (valor == guardados.value[i].nombre) {
+            console.log(guardados.value[i].data);
+            resultados.value = guardados.value[i].data;
+            console.log('Resultados ' + resultados.value);
+        }
+    }
     }
 
     const isGraphVisible = ref(false);
@@ -234,10 +204,14 @@ export default {
       labels.value = [];
       muertas.value = [];
       vivas.value = [];
+      curadas.value = [];
+      infectadas.value = [];
       for (let j = 0; j < resultados.value.length; j++) {
         labels.value.push(resultados.value[j].mes);
         vivas.value.push(resultados.value[j].vivas);
         muertas.value.push(resultados.value[j].muertas);
+        curadas.value.push(resultados.value[j].curadas);
+        infectadas.value.push(resultados.value[j].infectadas);
       }
 
       cargarGraf();
@@ -260,6 +234,18 @@ export default {
               data: muertas.value,
               borderColor: "blue",
               backgroundColor: "rgba(0, 0, 255, 0.5)",
+            },
+            {
+              label: "Cantidad de veces Curadas",
+              data: curadas.value,
+              borderColor: "green",
+              backgroundColor: "rgba(0, 255, 0, 0.5)",
+            },
+            {
+              label: "Cantidad de veces Infectadas",
+              data: infectadas.value,
+              borderColor: "orange",
+              backgroundColor: "rgba(255, 140, 0 , 0.5)",
             },
           ],
         };
@@ -286,23 +272,9 @@ export default {
         });
       }
     };
-    onMounted(async () => {
-      try {
-        const res = await fetch('http://localhost:3000/api/simulaciones/get',{
-          method:'GET',
-          headers:{
-            'Content-Type':'application/json'
-          }
-        });
-        const data = await res.json();
-        console.log('hola'+data.value)
 
-      } catch (error) {
-        console.error('Error al cargar los datos desde el archivo JSON:', error);
-      }
 
-  
-    });
+   
 
 
     //Funciones para desplegar los elementos
@@ -463,5 +435,6 @@ export default {
 .saved .v-btn{
   width: 100px !important;
   margin-right: 20px;
+  font-size:10px
 }
 </style>
