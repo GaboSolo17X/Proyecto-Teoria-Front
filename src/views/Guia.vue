@@ -47,10 +47,10 @@
                   </v-col>
                   <v-col cols="6">
                     <div class="text-left">
-                      <h3>
+                      <h2>
                         1.- Cuadro de variables: Puede colocar diferentes
                         valores para probar.
-                      </h3>
+                      </h2>
                       <br />
                       En el caso de seleccionar la condicion del ganado existen
                       2 condiciones: Optimo: Significa una buena base
