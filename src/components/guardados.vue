@@ -435,5 +435,6 @@ export default {
 .saved .v-btn{
   width: 100px !important;
   margin-right: 20px;
+  font-size:10px
 }
 </style>

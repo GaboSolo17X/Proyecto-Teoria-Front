@@ -536,26 +536,25 @@ export default {
     
     }
    
-    const pruebaRegistro=async(i,name,resultados)=>{
+    const pruebaRegistro=async(i,name,resultados2)=>{
   try {
-    if(resultados.curadas=null){
-      resultados.curadas=0
-    }
+
 
     const formData=new FormData();
     formData.append("nombreSimulacion",name);
-    formData.append("mes",resultados.mes);
-    formData.append("inMes",resultados.inMes);
-    formData.append("infectadas",resultados.infectadas);
-    formData.append("mueMes",resultados.mueIn);
-    formData.append("muertas",resultados.muertas);
-    formData.append("ti",resultados.ti);
-    formData.append("tl",resultados.tl);
-    formData.append("tm",resultados.tm);
-    formData.append("vivas",resultados.vivas);
-    formData.append("curadas",resultados.curadas);
+    formData.append("mes",resultados2.mes);
+    formData.append("inMes",resultados2.inMes);
+    formData.append("infectadas",resultados2.infectadas);
+    formData.append("mueMes",resultados2.mueIn);
+    formData.append("muertas",resultados2.muertas);
+    formData.append("ti",resultados2.ti);
+    formData.append("tl",resultados2.tl);
+    formData.append("tm",resultados2.tm);
+    formData.append("vivas",resultados2.vivas);
+    formData.append("curadas",resultados.value[i].curadas);
     console.log("Guardando DATA")
-    console.log(resultados.mes)
+    console.log(resultados2.vivas)
+    console.log(resultados.value[i].curadas)
     console.log(formData)
     const res=await fetch('http://localhost:3000/api/simulaciones/add',{
       method:'POST',
@@ -602,11 +601,6 @@ export default {
       isTableVisible.value = true;
       isCalcVisible.value = false;
     };
-
-    
-
-
-  
 
     return {
       form,
